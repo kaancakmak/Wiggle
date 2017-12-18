@@ -12,6 +12,7 @@ import UIKit
 
 class ConnectVC: UIViewController, UITableViewDataSource, UITableViewDelegate, CBCentralManagerDelegate, CBPeripheralDelegate {
     
+    
     @IBOutlet weak var tableView: UITableView!
     
     
@@ -23,55 +24,69 @@ class ConnectVC: UIViewController, UITableViewDataSource, UITableViewDelegate, C
     
     var items = [String: [String: Any]]()
     
+    var newSections = [MenuSection]()
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
-   
         
-        // Do any additional setup after loading the view, typically from a nib.
-        manager = CBCentralManager(delegate: self, queue: nil)
+        let section1 = MenuSection(sectionTitle: "Modules")
+        let section2 = MenuSection(sectionTitle: "Clock & Date")
+        
+        newSections.append(section1)
+        newSections.append(section2)
         
         tableView.delegate = self
         tableView.dataSource = self
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        manager = CBCentralManager(delegate: self, queue: nil)
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as? ItemCell{
+        
+        testLabel.text = "1"
+        // Configure the cell...
+        if let item = itemForIndexPath(indexPath){
+            let itemName = item["name"] as? String
+            cell.updateName(_firstLabel: itemName!)
             
-            let item = itemForIndexPath(indexPath)
+            testLabel.text = "2"
             
-            let itemName = item!["name"] as! String
-            
-            cell.updateName(_firstLabel: itemName)
-            
-            testLabel.text = "1"
-            
-            if let rssi = item!["rssi"] as? Int {
+            if let rssi = item["rssi"] as? Int {
                 let itemRSSI = "\(rssi.description) dBm"
                 cell.updateRSSI(_secondLabel: itemRSSI)
-                testLabel.text = "2"
             } else {
                 cell.updateRSSI(_secondLabel: "Unknown")
-                testLabel.text = "3"
             }
+        }
             return cell
         }
         else{
-            testLabel.text = "4"
+            testLabel.text = "3"
             return UITableViewCell()
         }
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        testLabel.text = "TAP"
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.items.keys.count
+        return items.count
+ 
     }
     
     func itemForIndexPath(_ indexPath: IndexPath) -> [String: Any]?{
         
-        if indexPath.row > items.keys.count{
+        if indexPath.row > items.count{
             return nil
         }
         
